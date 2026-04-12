@@ -24,7 +24,7 @@ import {
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import ReactMarkdown from 'react-markdown'
-import { EBOOK_THEMES, type EbookTheme } from '@/lib/pdf/ebook-pdf'
+import { EBOOK_THEMES, type EbookTheme } from '@/lib/pdf/ebook-themes'
 
 interface EbookOutline {
   title: string
