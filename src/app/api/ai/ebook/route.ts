@@ -28,7 +28,7 @@ async function handleReal(request: NextRequest) {
   }
 
   const userPrompt = buildEbookPrompt({ niche, audience, promise, level, mode })
-  const result = await generateWithModel(model, EBOOK_SYSTEM_PROMPT, userPrompt, mode === 'full' ? 4096 : 2048)
+  const result = await generateWithModel(model, EBOOK_SYSTEM_PROMPT, userPrompt, mode === 'full' ? 2048 : 1024)
   await incrementUsage(supabase, user.id, profile?.generations_used ?? 0)
 
   if (mode === 'outline') {
