@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cash.IA — Sem conexão</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      background: #03010a;
+      color: #f0eeff;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+    }
+    .icon {
+      font-size: 64px;
+      margin-bottom: 24px;
+      display: block;
+      filter: drop-shadow(0 0 24px rgba(168,85,247,0.6));
+    }
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    h1 span {
+      background: linear-gradient(135deg, #c084fc, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    p { color: #6b5f8a; font-size: 14px; margin-bottom: 32px; line-height: 1.6; }
+    button {
+      background: linear-gradient(135deg, #9333ea, #6366f1, #38bdf8);
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <span class="icon">⚡</span>
+    <h1>Sem conexão <span>com a internet</span></h1>
+    <p>Verifique sua conexão e tente novamente.<br/>O Cash.IA precisa de internet para usar a IA.</p>
+    <button onclick="location.reload()">Tentar novamente</button>
+  </div>
+</body>
+</html>
