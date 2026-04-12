@@ -353,10 +353,10 @@ export function EbookGenerator() {
                     key={theme.id}
                     type="button"
                     onClick={() => setSelectedTheme(theme)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
                     style={{
                       background: selectedTheme.id === theme.id
-                        ? `rgb(${theme.primary.join(',')})`
+                        ? `rgba(${theme.primary.join(',')},0.15)`
                         : 'rgba(168,85,247,0.05)',
                       border: selectedTheme.id === theme.id
                         ? `1px solid rgb(${theme.primary.join(',')})`
@@ -364,7 +364,10 @@ export function EbookGenerator() {
                       color: selectedTheme.id === theme.id ? '#fff' : '#9b8cc0',
                     }}
                   >
-                    <span>{theme.emoji}</span>
+                    <span
+                      className="w-3 h-3 rounded-full shrink-0"
+                      style={{ background: `rgb(${theme.primary.join(',')})` }}
+                    />
                     {theme.name}
                   </button>
                 ))}
