@@ -109,10 +109,17 @@ export function EbookGenerator() {
         return
       }
 
+      if (!data) {
+        toast.error('A IA não retornou conteúdo. Tente novamente.')
+        setStep('outline')
+        return
+      }
+
       setContent(data)
       toast.success('eBook gerado com sucesso!')
-    } catch {
-      toast.error('Erro ao gerar conteúdo.')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro ao gerar conteúdo.')
+      setStep('outline')
     } finally {
       setGenerating(false)
     }
