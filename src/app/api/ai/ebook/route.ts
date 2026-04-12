@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
   // ── Modo Demo ────────────────────────────────────
   if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
     const body = await request.json()
-    await new Promise((r) => setTimeout(r, 1800)) // simula latência da IA
+    await new Promise((r) => setTimeout(r, 1800))
 
     if (body.mode === 'outline') {
       return NextResponse.json({ data: DEMO_EBOOK_OUTLINE })
@@ -50,5 +50,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ data: DEMO_EBOOK_CONTENT })
   }
 
-  return handleReal(request)
+  try {
+    return await handleReal(request)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Erro interno'
+    console.error('[ebook/route]', message)
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
 }
