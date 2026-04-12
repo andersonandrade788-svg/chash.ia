@@ -11,7 +11,7 @@ export async function generateWithClaude(
 ): Promise<string> {
   const anthropic = getClient()
   const message = await anthropic.messages.create({
-    model: 'claude-opus-4-6',
+    model: 'claude-sonnet-4-6',
     max_tokens: maxTokens,
     system: systemPrompt,
     messages: [{ role: 'user', content: userPrompt }],
@@ -30,7 +30,7 @@ export async function streamWithClaude(
 ): Promise<void> {
   const anthropic = getClient()
   const stream = anthropic.messages.stream({
-    model: 'claude-opus-4-6',
+    model: 'claude-sonnet-4-6',
     max_tokens: maxTokens,
     system: systemPrompt,
     messages: [{ role: 'user', content: userPrompt }],

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { DEMO_COURSE } from '@/lib/ai/demo-responses'
 
+export const maxDuration = 60
+
 async function handleReal(request: NextRequest) {
   const { createClient } = await import('@/lib/supabase/server')
   const { generateWithModel } = await import('@/lib/ai/router')

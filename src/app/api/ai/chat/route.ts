@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server'
 import { DEMO_CHAT_RESPONSES } from '@/lib/ai/demo-responses'
 
+export const maxDuration = 60
+
 async function handleReal(request: NextRequest) {
   const { createClient } = await import('@/lib/supabase/server')
   const { CHAT_SYSTEM_PROMPT, AGENT_PROMPTS } = await import('@/lib/ai/prompts')
@@ -22,7 +24,7 @@ async function handleReal(request: NextRequest) {
       try {
         if (model === 'claude') {
           const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-          const claudeStream = anthropic.messages.stream({ model: 'claude-opus-4-6', max_tokens: 2048, system: systemPrompt, messages })
+          const claudeStream = anthropic.messages.stream({ model: 'claude-sonnet-4-6', max_tokens: 2048, system: systemPrompt, messages })
           for await (const chunk of claudeStream) {
             if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
               controller.enqueue(encoder.encode(chunk.delta.text))
