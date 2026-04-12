@@ -33,7 +33,22 @@ async function handleReal(request: NextRequest) {
 
   if (mode === 'outline') {
     const jsonMatch = result.match(/\{[\s\S]*\}/)
-    if (jsonMatch) return NextResponse.json({ data: JSON.parse(jsonMatch[0]) })
+    if (jsonMatch) {
+      try {
+        return NextResponse.json({ data: JSON.parse(jsonMatch[0]) })
+      } catch {
+        // JSON malformado — tenta limpar e fazer parse novamente
+        const cleaned = jsonMatch[0]
+          .replace(/,\s*}/g, '}')
+          .replace(/,\s*]/g, ']')
+        try {
+          return NextResponse.json({ data: JSON.parse(cleaned) })
+        } catch {
+          // Retorna como texto se ainda falhar
+          return NextResponse.json({ data: result })
+        }
+      }
+    }
   }
   return NextResponse.json({ data: result })
 }

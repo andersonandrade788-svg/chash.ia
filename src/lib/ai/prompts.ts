@@ -36,7 +36,9 @@ Retorne em JSON com o seguinte formato:
   "targetAudience": "Descrição do público ideal",
   "mainBenefit": "Principal transformação que o leitor terá",
   "potentialScore": 85
-}`
+}
+
+IMPORTANTE: Retorne APENAS o JSON puro, sem texto antes ou depois, sem markdown, sem blocos de código. O JSON deve ser válido e sem vírgulas extras.`
   }
 
   return `Crie o conteúdo COMPLETO de um eBook para:
