@@ -57,10 +57,13 @@ async function handleReal(request: NextRequest) {
   }
 
   const userPrompt = buildEbookPrompt({ niche, audience, promise, level, mode })
-  const result = await generateWithModel(model, EBOOK_SYSTEM_PROMPT, userPrompt, mode === 'full' ? 2048 : 1024)
+  // outline precisa de ~2000 tokens para 7 capítulos com descrições em PT
+  const result = await generateWithModel(model, EBOOK_SYSTEM_PROMPT, userPrompt, mode === 'full' ? 3000 : 2000)
   await incrementUsage(supabase, user.id, profile?.generations_used ?? 0)
 
   if (mode === 'outline') {
+    console.log('[ebook/route] raw length:', result.length, '| first 200:', result.slice(0, 200))
+
     const jsonMatch = result.match(/\{[\s\S]*\}/)
     if (jsonMatch) {
       let parsed: Record<string, unknown> | null = null
@@ -74,17 +77,25 @@ async function handleReal(request: NextRequest) {
           parsed = JSON.parse(cleaned)
         } catch {
           console.error('[ebook/route] JSON inválido:', jsonMatch[0].slice(0, 500))
-          return NextResponse.json({ data: result })
+          return NextResponse.json({ error: 'A IA retornou JSON inválido. Tente novamente.' }, { status: 500 })
         }
       }
 
       console.log('[ebook/route] outline keys:', Object.keys(parsed ?? {}))
 
-      // Normaliza nomes de campo em PT para EN
       const normalized = normalizeOutline(parsed ?? {})
+      console.log('[ebook/route] normalized chapters count:', normalized.chapters.length)
+
+      if (!normalized.title && !normalized.chapters.length) {
+        console.error('[ebook/route] Normalização falhou. Raw keys:', Object.keys(parsed ?? {}))
+        // Retorna o parsed bruto para o frontend conseguir algo
+        return NextResponse.json({ data: parsed })
+      }
+
       return NextResponse.json({ data: normalized })
     }
     console.error('[ebook/route] Nenhum JSON encontrado. Raw:', result.slice(0, 500))
+    return NextResponse.json({ error: 'A IA não retornou o formato esperado. Tente novamente.' }, { status: 500 })
   }
   return NextResponse.json({ data: result })
 }
