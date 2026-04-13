@@ -1,9 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Bot,
   Send,
@@ -101,6 +100,11 @@ export function AgentsPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
 
   function selectAgent(agent: typeof agents[0]) {
     setSelectedAgent(agent)
@@ -315,7 +319,7 @@ export function AgentsPage() {
           backdropFilter: 'blur(24px)',
         }}
       >
-        <ScrollArea className="flex-1 p-5">
+        <div className="flex-1 overflow-y-auto p-5 min-h-0">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full py-12 text-center">
               <div
@@ -419,7 +423,8 @@ export function AgentsPage() {
               ))}
             </div>
           )}
-        </ScrollArea>
+          <div ref={bottomRef} />
+        </div>
 
         <div
           className="p-4 flex gap-2 shrink-0"
