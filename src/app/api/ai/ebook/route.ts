@@ -35,7 +35,13 @@ function normalizeOutline(raw: Record<string, any>) {
 async function handleReal(request: NextRequest) {
   const { createClient } = await import('@/lib/supabase/server')
   const { generateWithModel } = await import('@/lib/ai/router')
-  const { EBOOK_SYSTEM_PROMPT, buildEbookPrompt } = await import('@/lib/ai/prompts')
+  const {
+    EBOOK_SYSTEM_PROMPT,
+    buildEbookPrompt,
+    buildEbookChapterPrompt,
+    buildEbookIntroPrompt,
+    buildEbookConclusionPrompt,
+  } = await import('@/lib/ai/prompts')
   const { checkUsageLimit, incrementUsage } = await import('@/lib/supabase/usage')
 
   const supabase = await createClient()
@@ -52,63 +58,95 @@ async function handleReal(request: NextRequest) {
 
   const body = await request.json()
   const { niche, audience, promise, level, mode, model = 'claude' } = body
-  if (!niche || !audience || !promise || !level) {
-    return NextResponse.json({ error: 'Campos obrigatórios faltando' }, { status: 400 })
-  }
 
-  const userPrompt = buildEbookPrompt({ niche, audience, promise, level, mode })
-  // outline precisa de ~2000 tokens para 7 capítulos com descrições em PT
-  const result = await generateWithModel(model, EBOOK_SYSTEM_PROMPT, userPrompt, mode === 'full' ? 3000 : 2000)
-  await incrementUsage(supabase, user.id, profile?.generations_used ?? 0)
-
+  // ── Modo: outline ─────────────────────────────────────────────
   if (mode === 'outline') {
-    console.log('[ebook/route] raw length:', result.length, '| first 200:', result.slice(0, 200))
-
-    const jsonMatch = result.match(/\{[\s\S]*\}/)
-    if (jsonMatch) {
-      let parsed: Record<string, unknown> | null = null
-      try {
-        parsed = JSON.parse(jsonMatch[0])
-      } catch {
-        const cleaned = jsonMatch[0]
-          .replace(/,\s*}/g, '}')
-          .replace(/,\s*]/g, ']')
-        try {
-          parsed = JSON.parse(cleaned)
-        } catch {
-          console.error('[ebook/route] JSON inválido:', jsonMatch[0].slice(0, 500))
-          return NextResponse.json({ error: 'A IA retornou JSON inválido. Tente novamente.' }, { status: 500 })
-        }
-      }
-
-      console.log('[ebook/route] outline keys:', Object.keys(parsed ?? {}))
-
-      const normalized = normalizeOutline(parsed ?? {})
-      console.log('[ebook/route] normalized chapters count:', normalized.chapters.length)
-
-      if (!normalized.title && !normalized.chapters.length) {
-        console.error('[ebook/route] Normalização falhou. Raw keys:', Object.keys(parsed ?? {}))
-        // Retorna o parsed bruto para o frontend conseguir algo
-        return NextResponse.json({ data: parsed })
-      }
-
-      return NextResponse.json({ data: normalized })
+    if (!niche || !audience || !promise || !level) {
+      return NextResponse.json({ error: 'Campos obrigatórios faltando' }, { status: 400 })
     }
-    console.error('[ebook/route] Nenhum JSON encontrado. Raw:', result.slice(0, 500))
-    return NextResponse.json({ error: 'A IA não retornou o formato esperado. Tente novamente.' }, { status: 500 })
+
+    const userPrompt = buildEbookPrompt({ niche, audience, promise, level, mode: 'outline' })
+    const result = await generateWithModel(model, EBOOK_SYSTEM_PROMPT, userPrompt, 2000)
+    await incrementUsage(supabase, user.id, profile?.generations_used ?? 0)
+
+    console.log('[ebook/outline] raw length:', result.length, '| preview:', result.slice(0, 300))
+
+    // Tenta extrair JSON da resposta
+    const jsonMatch = result.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) {
+      console.error('[ebook/outline] Nenhum JSON encontrado. Raw:', result.slice(0, 500))
+      return NextResponse.json({ error: 'A IA não retornou o formato esperado. Tente novamente.' }, { status: 500 })
+    }
+
+    let parsed: Record<string, unknown> | null = null
+    try {
+      parsed = JSON.parse(jsonMatch[0])
+    } catch {
+      const cleaned = jsonMatch[0].replace(/,\s*}/g, '}').replace(/,\s*]/g, ']')
+      try {
+        parsed = JSON.parse(cleaned)
+      } catch {
+        console.error('[ebook/outline] JSON inválido após cleanup:', jsonMatch[0].slice(0, 500))
+        return NextResponse.json({ error: 'A IA retornou JSON inválido. Tente novamente.' }, { status: 500 })
+      }
+    }
+
+    console.log('[ebook/outline] parsed keys:', Object.keys(parsed ?? {}))
+
+    const normalized = normalizeOutline(parsed ?? {})
+    console.log('[ebook/outline] chapters count:', normalized.chapters.length, '| title:', normalized.title)
+
+    // Se normalization falhar, retorna o objeto bruto para o frontend tentar usar
+    if (!normalized.title && normalized.chapters.length === 0) {
+      console.error('[ebook/outline] Normalization failed. Raw parsed:', JSON.stringify(parsed).slice(0, 500))
+      return NextResponse.json({ data: parsed })
+    }
+
+    return NextResponse.json({ data: normalized })
   }
-  return NextResponse.json({ data: result })
+
+  // ── Modo: chapter ─────────────────────────────────────────────
+  if (mode === 'chapter') {
+    const { chapterNumber, chapterTitle, chapterDescription, keyPoints, ebookTitle } = body
+    const userPrompt = buildEbookChapterPrompt({
+      chapterNumber, chapterTitle, chapterDescription,
+      keyPoints: keyPoints ?? [],
+      niche, audience, level, ebookTitle,
+    })
+    const result = await generateWithModel(model, EBOOK_SYSTEM_PROMPT, userPrompt, 1500)
+    await incrementUsage(supabase, user.id, profile?.generations_used ?? 0)
+    return NextResponse.json({ data: result })
+  }
+
+  // ── Modo: intro ───────────────────────────────────────────────
+  if (mode === 'intro') {
+    const { ebookTitle, ebookSubtitle } = body
+    const userPrompt = buildEbookIntroPrompt({
+      title: ebookTitle, subtitle: ebookSubtitle,
+      niche, audience, promise, level,
+    })
+    const result = await generateWithModel(model, EBOOK_SYSTEM_PROMPT, userPrompt, 1000)
+    await incrementUsage(supabase, user.id, profile?.generations_used ?? 0)
+    return NextResponse.json({ data: result })
+  }
+
+  // ── Modo: conclusion ──────────────────────────────────────────
+  if (mode === 'conclusion') {
+    const { ebookTitle } = body
+    const userPrompt = buildEbookConclusionPrompt({ title: ebookTitle, niche, promise })
+    const result = await generateWithModel(model, EBOOK_SYSTEM_PROMPT, userPrompt, 800)
+    await incrementUsage(supabase, user.id, profile?.generations_used ?? 0)
+    return NextResponse.json({ data: result })
+  }
+
+  return NextResponse.json({ error: 'Modo inválido' }, { status: 400 })
 }
 
 export async function POST(request: NextRequest) {
-  // ── Modo Demo ────────────────────────────────────
   if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
     const body = await request.json()
     await new Promise((r) => setTimeout(r, 1800))
-
-    if (body.mode === 'outline') {
-      return NextResponse.json({ data: DEMO_EBOOK_OUTLINE })
-    }
+    if (body.mode === 'outline') return NextResponse.json({ data: DEMO_EBOOK_OUTLINE })
     return NextResponse.json({ data: DEMO_EBOOK_CONTENT })
   }
 

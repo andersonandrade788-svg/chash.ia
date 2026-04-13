@@ -58,6 +58,7 @@ export function EbookGenerator() {
   const [generating, setGenerating] = useState(false)
   const [selectedTheme, setSelectedTheme] = useState<EbookTheme>(EBOOK_THEMES[0])
   const [downloadingPdf, setDownloadingPdf] = useState(false)
+  const [genProgress, setGenProgress] = useState({ current: 0, total: 0, label: '' })
 
   const [form, setForm] = useState({
     niche: '',
@@ -94,39 +95,72 @@ export function EbookGenerator() {
     }
   }
 
+  async function callAPI(body: Record<string, unknown>): Promise<string> {
+    const res = await fetch('/api/ai/ebook', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    const { data, error } = await res.json()
+    if (error) throw new Error(error)
+    return data as string
+  }
+
   async function handleGenerateContent() {
+    if (!outline) return
     setGenerating(true)
     setContent('')
     setStep('content')
 
+    const chapters = outline.chapters ?? []
+    const total = chapters.length + 2 // intro + chapters + conclusion
+    setGenProgress({ current: 0, total, label: 'Gerando introdução...' })
+
     try {
-      const res = await fetch('/api/ai/ebook', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, mode: 'full', model }),
+      const parts: string[] = []
+
+      // Intro
+      const intro = await callAPI({
+        ...form, mode: 'intro', model,
+        ebookTitle: outline.title,
+        ebookSubtitle: outline.subtitle,
       })
+      parts.push(intro)
+      setContent(parts.join('\n\n---\n\n'))
 
-      const { data, error } = await res.json()
-
-      if (error) {
-        toast.error(error)
-        setStep('outline')
-        return
+      // Cada capítulo
+      for (let i = 0; i < chapters.length; i++) {
+        const ch = chapters[i]
+        setGenProgress({ current: i + 1, total, label: `Gerando capítulo ${i + 1} de ${chapters.length}...` })
+        const chText = await callAPI({
+          ...form, mode: 'chapter', model,
+          ebookTitle: outline.title,
+          chapterNumber: ch.number,
+          chapterTitle: ch.title,
+          chapterDescription: ch.description,
+          keyPoints: ch.keyPoints,
+        })
+        parts.push(chText)
+        setContent(parts.join('\n\n---\n\n'))
       }
 
-      if (!data) {
-        toast.error('A IA não retornou conteúdo. Tente novamente.')
-        setStep('outline')
-        return
-      }
+      // Conclusão
+      setGenProgress({ current: total, total, label: 'Gerando conclusão...' })
+      const conclusion = await callAPI({
+        ...form, mode: 'conclusion', model,
+        ebookTitle: outline.title,
+      })
+      parts.push(conclusion)
+      setContent(parts.join('\n\n---\n\n'))
 
-      setContent(data)
-      toast.success('eBook gerado com sucesso!')
+      setGenProgress({ current: 0, total: 0, label: '' })
+      toast.success('eBook completo gerado com sucesso!')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Erro ao gerar conteúdo.')
       setStep('outline')
     } finally {
       setGenerating(false)
+      setGenProgress({ current: 0, total: 0, label: '' })
     }
   }
 
@@ -625,19 +659,35 @@ export function EbookGenerator() {
               {generating ? (
                 <div className="flex flex-col items-center justify-center py-16 gap-5">
                   <div className="relative">
-                    <div
-                      className="w-20 h-20 rounded-full border-2 border-t-purple-500 border-r-sky-400 border-b-purple-500/20 border-l-sky-400/20 animate-spin"
-                    />
+                    <div className="w-20 h-20 rounded-full border-2 border-t-purple-500 border-r-sky-400 border-b-purple-500/20 border-l-sky-400/20 animate-spin" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <Zap className="w-6 h-6" style={{ color: '#a855f7' }} />
                     </div>
                   </div>
-                  <div className="text-center">
-                    <p className="font-semibold text-white">Gerando seu eBook...</p>
-                    <p className="text-xs mt-1" style={{ color: '#a094c0' }}>
-                      A IA está escrevendo capítulo por capítulo
-                    </p>
+                  <div className="text-center w-full max-w-xs">
+                    <p className="font-semibold text-white mb-1">Gerando seu eBook...</p>
+                    <p className="text-xs mb-3" style={{ color: '#a094c0' }}>{genProgress.label}</p>
+                    {genProgress.total > 0 && (
+                      <>
+                        <div className="w-full h-2 rounded-full overflow-hidden mb-1" style={{ background: 'rgba(168,85,247,0.1)' }}>
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{
+                              width: `${Math.round((genProgress.current / genProgress.total) * 100)}%`,
+                              background: 'linear-gradient(90deg,#9333ea,#38bdf8)',
+                              boxShadow: '0 0 8px rgba(168,85,247,0.6)',
+                            }}
+                          />
+                        </div>
+                        <p className="text-[10px]" style={{ color: '#7a6fa0' }}>
+                          {genProgress.current} de {genProgress.total} partes
+                        </p>
+                      </>
+                    )}
                   </div>
+                  {content && (
+                    <p className="text-xs" style={{ color: '#34d399' }}>Prévia sendo carregada abaixo...</p>
+                  )}
                 </div>
               ) : (
                 <Tabs defaultValue="preview">

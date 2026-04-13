@@ -14,36 +14,18 @@ export function buildEbookPrompt(params: {
   mode?: 'outline' | 'full'
 }): string {
   if (params.mode === 'outline') {
-    return `Crie o planejamento completo de um eBook para:
-- Nicho: ${params.niche}
-- Público-alvo: ${params.audience}
-- Promessa principal: ${params.promise}
-- Nível do público: ${params.level}
+    return `You are creating an ebook outline. Respond with ONLY a valid JSON object, no other text.
 
-Retorne em JSON com o seguinte formato:
-{
-  "title": "Título impactante do eBook",
-  "subtitle": "Subtítulo complementar",
-  "tagline": "Frase de impacto curta",
-  "chapters": [
-    {
-      "number": 1,
-      "title": "Título do Capítulo",
-      "description": "Sobre o que trata este capítulo",
-      "keyPoints": ["ponto 1", "ponto 2", "ponto 3"]
-    }
-  ],
-  "targetAudience": "Descrição do público ideal",
-  "mainBenefit": "Principal transformação que o leitor terá",
-  "potentialScore": 85
-}
+Ebook details:
+- Niche: ${params.niche}
+- Audience: ${params.audience}
+- Promise: ${params.promise}
+- Level: ${params.level}
 
-REGRAS CRÍTICAS:
-1. Retorne APENAS o JSON puro — sem texto antes ou depois, sem markdown, sem \`\`\`json, sem blocos de código
-2. Use EXATAMENTE os nomes de campo em inglês: "title", "subtitle", "tagline", "chapters", "targetAudience", "mainBenefit", "potentialScore"
-3. O array "chapters" deve ter exatamente 7 itens, cada um com: "number" (inteiro), "title" (string), "description" (string), "keyPoints" (array de strings)
-4. "potentialScore" deve ser um número inteiro entre 0 e 100
-5. O JSON deve ser válido — sem vírgulas extras, sem campos duplicados`
+Return this exact JSON structure (fill in Portuguese content):
+{"title":"string","subtitle":"string","tagline":"string","chapters":[{"number":1,"title":"string","description":"string","keyPoints":["string","string","string"]},{"number":2,"title":"string","description":"string","keyPoints":["string","string","string"]},{"number":3,"title":"string","description":"string","keyPoints":["string","string","string"]},{"number":4,"title":"string","description":"string","keyPoints":["string","string","string"]},{"number":5,"title":"string","description":"string","keyPoints":["string","string","string"]},{"number":6,"title":"string","description":"string","keyPoints":["string","string","string"]},{"number":7,"title":"string","description":"string","keyPoints":["string","string","string"]}],"targetAudience":"string","mainBenefit":"string","potentialScore":85}
+
+Rules: valid JSON only, no markdown, no code blocks, no extra text. Keep exact field names in English.`
   }
 
   return `Crie o conteúdo COMPLETO de um eBook para:
@@ -60,6 +42,76 @@ Escreva com:
 - Linguagem adaptada ao nível do público
 
 Use markdown com títulos, subtítulos, listas e destaques em negrito.`
+}
+
+export function buildEbookChapterPrompt(params: {
+  chapterNumber: number
+  chapterTitle: string
+  chapterDescription: string
+  keyPoints: string[]
+  niche: string
+  audience: string
+  level: string
+  ebookTitle: string
+}): string {
+  return `Escreva o Capítulo ${params.chapterNumber} de um eBook sobre "${params.niche}" para "${params.audience}" (nível ${params.level}).
+
+eBook: "${params.ebookTitle}"
+Capítulo: ${params.chapterNumber} — ${params.chapterTitle}
+Sobre: ${params.chapterDescription}
+Pontos principais: ${params.keyPoints.join(', ')}
+
+Escreva em português do Brasil com:
+- Título do capítulo como # Capítulo ${params.chapterNumber}: ${params.chapterTitle}
+- Introdução do capítulo (1 parágrafo)
+- Desenvolvimento com subtítulos (##) para cada ponto principal
+- Exemplos práticos e concretos
+- Exercício prático ao final (## Exercício Prático)
+- Linguagem adaptada ao nível ${params.level}
+
+Use markdown. Escreva pelo menos 500 palavras de conteúdo rico e útil.`
+}
+
+export function buildEbookIntroPrompt(params: {
+  title: string
+  subtitle: string
+  niche: string
+  audience: string
+  promise: string
+  level: string
+}): string {
+  return `Escreva a Introdução de um eBook chamado "${params.title}" sobre ${params.niche} para ${params.audience} (nível ${params.level}).
+
+Promessa: ${params.promise}
+
+Escreva em português do Brasil com:
+- Título: # ${params.title}
+- Subtítulo em itálico
+- Seção "Sobre Este eBook" (##)
+- Seção "Para Quem é Este Livro" (##)
+- Seção "O Que Você Vai Aprender" (##) com lista dos benefícios
+- Mensagem motivacional de boas-vindas
+
+Use markdown. Pelo menos 300 palavras.`
+}
+
+export function buildEbookConclusionPrompt(params: {
+  title: string
+  niche: string
+  promise: string
+}): string {
+  return `Escreva a Conclusão de um eBook chamado "${params.title}" sobre ${params.niche}.
+
+Promessa cumprida: ${params.promise}
+
+Escreva em português do Brasil com:
+- Título: # Conclusão: Sua Jornada Começa Agora
+- Recapitulação da transformação (##)
+- Próximos passos práticos (## Seus Próximos Passos) com lista numerada
+- Call to action motivacional final
+- Seção "Cash.IA — Continue Crescendo" com menção à plataforma
+
+Use markdown. Pelo menos 300 palavras.`
 }
 
 // ── Course Prompts ─────────────────────────────────────────────
