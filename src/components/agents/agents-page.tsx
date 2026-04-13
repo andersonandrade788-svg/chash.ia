@@ -266,7 +266,7 @@ export function AgentsPage() {
 
   /* ── Chat with agent ──────────────────────────── */
   return (
-    <div className="flex flex-col h-[calc(100vh-7rem)] md:h-[calc(100vh-8rem)] max-w-3xl mx-auto gap-4">
+    <div className="flex flex-col max-w-3xl mx-auto gap-4" style={{ height: 'calc(100vh - 140px)' }}>
 
       {/* Chat header */}
       <div className="flex items-center gap-3 shrink-0">
@@ -312,14 +312,15 @@ export function AgentsPage() {
 
       {/* Chat body */}
       <div
-        className="flex-1 overflow-hidden rounded-2xl flex flex-col"
+        className="min-h-0 flex-1 rounded-2xl flex flex-col"
         style={{
           background: 'rgba(5,3,14,0.92)',
           border: `1px solid ${selectedAgent.border}`,
           backdropFilter: 'blur(24px)',
+          overflow: 'hidden',
         }}
       >
-        <div className="flex-1 overflow-y-auto p-5 min-h-0">
+        <div className="p-5" style={{ flex: '1 1 0', overflowY: 'auto', minHeight: 0 }}>
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full py-12 text-center">
               <div
@@ -436,6 +437,7 @@ export function AgentsPage() {
             style={{ background: `${selectedAgent.color}08`, border: `1px solid ${selectedAgent.border}`, color: '#f0eeff' }}
             rows={1}
             value={input}
+            disabled={false}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
