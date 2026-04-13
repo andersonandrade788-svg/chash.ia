@@ -424,10 +424,10 @@ export function EbookGenerator() {
           >
             <div className="flex items-center gap-2 mb-4">
               <FileText className="w-4 h-4" style={{ color: '#a855f7' }} />
-              <h3 className="text-sm font-semibold text-white">Sumário — {outline.chapters.length} Capítulos</h3>
+              <h3 className="text-sm font-semibold text-white">Sumário — {outline.chapters?.length ?? 0} Capítulos</h3>
             </div>
             <div className="space-y-2">
-              {outline.chapters.map((ch) => (
+              {(outline.chapters ?? []).map((ch) => (
                 <div
                   key={ch.number}
                   className="p-3 rounded-xl transition-all duration-200 group"
@@ -452,7 +452,7 @@ export function EbookGenerator() {
                   </div>
                   <p className="text-xs ml-9 mb-2" style={{ color: '#a094c0' }}>{ch.description}</p>
                   <div className="ml-9 flex flex-wrap gap-1">
-                    {ch.keyPoints.map((kp, i) => (
+                    {(ch.keyPoints ?? []).map((kp, i) => (
                       <span
                         key={i}
                         className="text-[10px] px-2 py-0.5 rounded-full"

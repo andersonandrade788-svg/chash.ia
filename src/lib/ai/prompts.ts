@@ -38,7 +38,7 @@ Retorne em JSON com o seguinte formato:
   "potentialScore": 85
 }
 
-IMPORTANTE: Retorne APENAS o JSON puro, sem texto antes ou depois, sem markdown, sem blocos de código. O JSON deve ser válido e sem vírgulas extras.`
+IMPORTANTE: Retorne APENAS o JSON puro, sem texto antes ou depois, sem markdown, sem blocos de código. O JSON deve ser válido e sem vírgulas extras. Os campos obrigatórios são: title, subtitle, tagline, chapters (array com pelo menos 5 itens), targetAudience, mainBenefit, potentialScore.`
   }
 
   return `Crie o conteúdo COMPLETO de um eBook para:
