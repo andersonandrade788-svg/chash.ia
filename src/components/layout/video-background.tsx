@@ -1,75 +1,69 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-
 export function VideoBackground() {
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [loaded, setLoaded] = useState(false)
-
-  useEffect(() => {
-    const v = videoRef.current
-    if (!v) return
-    // Tenta iniciar após interação do usuário (política de autoplay)
-    const play = () => v.play().catch(() => {})
-    play()
-    document.addEventListener('click', play, { once: true })
-    return () => document.removeEventListener('click', play, play as EventListenerOptions)
-  }, [])
-
   return (
     <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-      {/* Vídeo de fundo */}
-      <video
-        ref={videoRef}
-        className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
-        style={{ opacity: loaded ? 1 : 0 }}
-        src="/fundo%20espaco.mp4"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        onCanPlay={() => setLoaded(true)}
-      />
 
-      {/* Fallback: cosmic-bg fica visível enquanto vídeo carrega */}
-      <div
-        className="absolute inset-0 transition-opacity duration-1000"
-        style={{ opacity: loaded ? 0 : 1, background: '#03010a' }}
-      />
+      {/* Fundo base escuro */}
+      <div className="absolute inset-0" style={{ background: '#03010a' }} />
 
-      {/* Overlay principal — escurece o vídeo sem sufocar */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: 'rgba(3,1,10,0.78)',
-        }}
-      />
+      {/* Estrelas animadas — camada 1 (pequenas) */}
+      <div className="absolute inset-0" style={{
+        backgroundImage: 'radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%), radial-gradient(1px 1px at 25% 40%, rgba(255,255,255,0.4) 0%, transparent 100%), radial-gradient(1px 1px at 40% 10%, rgba(255,255,255,0.5) 0%, transparent 100%), radial-gradient(1px 1px at 55% 60%, rgba(255,255,255,0.3) 0%, transparent 100%), radial-gradient(1px 1px at 70% 25%, rgba(255,255,255,0.6) 0%, transparent 100%), radial-gradient(1px 1px at 85% 75%, rgba(255,255,255,0.4) 0%, transparent 100%), radial-gradient(1px 1px at 15% 80%, rgba(255,255,255,0.5) 0%, transparent 100%), radial-gradient(1px 1px at 60% 90%, rgba(255,255,255,0.3) 0%, transparent 100%), radial-gradient(1px 1px at 90% 45%, rgba(255,255,255,0.5) 0%, transparent 100%), radial-gradient(1px 1px at 35% 70%, rgba(255,255,255,0.4) 0%, transparent 100%), radial-gradient(1px 1px at 78% 12%, rgba(255,255,255,0.6) 0%, transparent 100%), radial-gradient(1px 1px at 5% 55%, rgba(255,255,255,0.3) 0%, transparent 100%), radial-gradient(1px 1px at 50% 35%, rgba(255,255,255,0.5) 0%, transparent 100%), radial-gradient(1px 1px at 95% 88%, rgba(255,255,255,0.4) 0%, transparent 100%), radial-gradient(1px 1px at 20% 95%, rgba(255,255,255,0.3) 0%, transparent 100%)',
+        animation: 'twinkle1 6s ease-in-out infinite alternate',
+      }} />
 
-      {/* Overlay de vinheta nas bordas — foca o olhar no centro */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: 'radial-gradient(ellipse 120% 100% at 50% 50%, transparent 40%, rgba(3,1,10,0.55) 100%)',
-        }}
-      />
+      {/* Estrelas — camada 2 (médias, outro ritmo) */}
+      <div className="absolute inset-0" style={{
+        backgroundImage: 'radial-gradient(1.5px 1.5px at 8% 30%, rgba(255,255,255,0.5) 0%, transparent 100%), radial-gradient(1.5px 1.5px at 45% 55%, rgba(255,255,255,0.4) 0%, transparent 100%), radial-gradient(1.5px 1.5px at 72% 8%, rgba(255,255,255,0.6) 0%, transparent 100%), radial-gradient(1.5px 1.5px at 88% 60%, rgba(255,255,255,0.3) 0%, transparent 100%), radial-gradient(1.5px 1.5px at 30% 20%, rgba(255,255,255,0.5) 0%, transparent 100%), radial-gradient(1.5px 1.5px at 65% 85%, rgba(255,255,255,0.4) 0%, transparent 100%), radial-gradient(1.5px 1.5px at 12% 65%, rgba(255,255,255,0.6) 0%, transparent 100%), radial-gradient(2px 2px at 55% 15%, rgba(168,85,247,0.7) 0%, transparent 100%), radial-gradient(2px 2px at 80% 40%, rgba(56,189,248,0.6) 0%, transparent 100%), radial-gradient(2px 2px at 22% 50%, rgba(168,85,247,0.5) 0%, transparent 100%)',
+        animation: 'twinkle2 8s ease-in-out infinite alternate',
+      }} />
 
-      {/* Overlay de cor roxa para identidade da marca */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: 'radial-gradient(ellipse 80% 50% at 20% 20%, rgba(168,85,247,0.07) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 70%, rgba(56,189,248,0.05) 0%, transparent 55%)',
-        }}
-      />
+      {/* Nebulosa roxa — canto superior esquerdo */}
+      <div className="absolute inset-0" style={{
+        background: 'radial-gradient(ellipse 70% 60% at 15% 20%, rgba(120,40,200,0.18) 0%, transparent 70%)',
+        animation: 'nebula 12s ease-in-out infinite alternate',
+      }} />
 
-      {/* Grid sutil por cima do vídeo */}
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: 'linear-gradient(rgba(168,85,247,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(168,85,247,0.03) 1px, transparent 1px)',
-          backgroundSize: '60px 60px',
-        }}
-      />
+      {/* Nebulosa azul — canto inferior direito */}
+      <div className="absolute inset-0" style={{
+        background: 'radial-gradient(ellipse 60% 50% at 85% 80%, rgba(30,90,220,0.12) 0%, transparent 70%)',
+        animation: 'nebula 15s ease-in-out infinite alternate-reverse',
+      }} />
+
+      {/* Nebulosa rosa — centro */}
+      <div className="absolute inset-0" style={{
+        background: 'radial-gradient(ellipse 40% 30% at 50% 50%, rgba(168,85,247,0.06) 0%, transparent 70%)',
+        animation: 'nebula 10s ease-in-out infinite alternate',
+      }} />
+
+      {/* Vinheta nas bordas */}
+      <div className="absolute inset-0" style={{
+        background: 'radial-gradient(ellipse 130% 110% at 50% 50%, transparent 35%, rgba(3,1,10,0.7) 100%)',
+      }} />
+
+      {/* Grid sutil */}
+      <div className="absolute inset-0" style={{
+        backgroundImage: 'linear-gradient(rgba(168,85,247,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(168,85,247,0.025) 1px, transparent 1px)',
+        backgroundSize: '60px 60px',
+      }} />
+
+      <style>{`
+        @keyframes twinkle1 {
+          0%   { opacity: 0.6; }
+          50%  { opacity: 1; }
+          100% { opacity: 0.7; }
+        }
+        @keyframes twinkle2 {
+          0%   { opacity: 0.4; }
+          50%  { opacity: 0.9; }
+          100% { opacity: 0.5; }
+        }
+        @keyframes nebula {
+          0%   { opacity: 0.7; transform: scale(1); }
+          100% { opacity: 1; transform: scale(1.08); }
+        }
+      `}</style>
     </div>
   )
 }
