@@ -75,36 +75,38 @@ export function buildCoursePrompt(params: {
   duration: string
   level: string
 }): string {
-  return `Crie a estrutura completa de um curso online sobre:
+  return `Crie a estrutura de um curso online sobre:
 - Tema: ${params.topic}
 - Público-alvo: ${params.audience}
 - Duração estimada: ${params.duration}
 - Nível: ${params.level}
 
-Retorne em JSON:
+Retorne APENAS o JSON puro abaixo, sem texto antes ou depois, sem markdown, sem blocos de código:
 {
   "courseName": "Nome do Curso",
-  "tagline": "Frase de impacto",
-  "description": "Descrição completa do curso",
+  "tagline": "Frase de impacto (até 10 palavras)",
+  "description": "Descrição do curso em 2-3 frases",
   "modules": [
     {
       "number": 1,
       "title": "Título do Módulo",
-      "description": "Objetivo do módulo",
+      "description": "Objetivo do módulo em 1 frase",
       "lessons": [
         {
           "number": 1,
           "title": "Título da Aula",
           "duration": "15 min",
-          "type": "aula|exercicio|live",
-          "script": "Script detalhado da aula com hook, desenvolvimento e CTA"
+          "type": "aula",
+          "script": "Hook + desenvolvimento em 2-3 frases + CTA"
         }
       ]
     }
   ],
   "bonuses": ["Bônus 1", "Bônus 2"],
-  "targetResult": "Resultado que o aluno terá ao concluir"
-}`
+  "targetResult": "Resultado principal do aluno em 1-2 frases"
+}
+
+REGRAS: JSON válido, sem vírgulas extras, exatamente esses nomes de campo. Crie 4 módulos com 3 aulas cada. Scripts curtos (máx 2 frases por aula).`
 }
 
 // ── Offer Prompts ──────────────────────────────────────────────
