@@ -48,22 +48,6 @@ export function VideoBackground() {
         backgroundSize: '60px 60px',
       }} />
 
-      <style>{`
-        @keyframes twinkle1 {
-          0%   { opacity: 0.6; }
-          50%  { opacity: 1; }
-          100% { opacity: 0.7; }
-        }
-        @keyframes twinkle2 {
-          0%   { opacity: 0.4; }
-          50%  { opacity: 0.9; }
-          100% { opacity: 0.5; }
-        }
-        @keyframes nebula {
-          0%   { opacity: 0.7; transform: scale(1); }
-          100% { opacity: 1; transform: scale(1.08); }
-        }
-      `}</style>
     </div>
   )
 }

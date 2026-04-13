@@ -464,6 +464,21 @@
   animation: blink 2s ease-in-out infinite;
 }
 
+@keyframes twinkle1 {
+  0%   { opacity: 0.6; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+@keyframes twinkle2 {
+  0%   { opacity: 0.4; }
+  50%  { opacity: 0.9; }
+  100% { opacity: 0.5; }
+}
+@keyframes nebula {
+  0%   { opacity: 0.7; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1.08); }
+}
+
 /* ══════════════════════════════════════════════════════════
    SCROLLBAR
    ══════════════════════════════════════════════════════════ */
