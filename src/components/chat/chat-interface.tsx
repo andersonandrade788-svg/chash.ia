@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   MessageSquare,
   Send,
@@ -203,14 +202,18 @@ export function ChatInterface() {
 
       {/* ── Chat area ─────────────────────────────── */}
       <div
-        className="flex-1 overflow-hidden rounded-2xl flex flex-col"
+        className="flex-1 min-h-0 rounded-2xl flex flex-col"
         style={{
           background: 'rgba(5,3,14,0.92)',
           border: '1px solid rgba(168,85,247,0.12)',
           backdropFilter: 'blur(24px)',
         }}
       >
-        <ScrollArea className="flex-1 p-5" ref={scrollRef as React.RefObject<HTMLDivElement>}>
+        <div
+          ref={scrollRef}
+          className="p-5"
+          style={{ flex: '1 1 0', overflowY: 'auto', minHeight: 0 }}
+        >
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div
@@ -335,7 +338,7 @@ export function ChatInterface() {
               ))}
             </div>
           )}
-        </ScrollArea>
+        </div>
 
         {/* ── Input area ────────────────────────── */}
         <div
