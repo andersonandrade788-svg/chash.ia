@@ -1,4 +1,3 @@
-import { jsPDF } from 'jspdf'
 import type { EbookTheme } from './ebook-themes'
 
 export type { EbookTheme }
@@ -40,6 +39,7 @@ function addPageHeader(doc: jsPDF, theme: EbookTheme, pageNum: number, total?: n
 }
 
 export async function generateEbookPDF(data: EbookData): Promise<void> {
+  const { jsPDF } = await import('jspdf')
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
   const pageW = doc.internal.pageSize.getWidth()   // 210
   const pageH = doc.internal.pageSize.getHeight()  // 297

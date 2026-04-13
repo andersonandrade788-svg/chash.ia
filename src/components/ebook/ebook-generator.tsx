@@ -19,10 +19,12 @@ import {
   FileText,
   Star,
   Check,
+  Palette,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import ReactMarkdown from 'react-markdown'
+import { EBOOK_THEMES, type EbookTheme } from '@/lib/pdf/ebook-themes'
 
 interface EbookOutline {
   title: string
@@ -54,6 +56,8 @@ export function EbookGenerator() {
   const [outline, setOutline] = useState<EbookOutline | null>(null)
   const [content, setContent] = useState('')
   const [generating, setGenerating] = useState(false)
+  const [selectedTheme, setSelectedTheme] = useState<EbookTheme>(EBOOK_THEMES[0])
+  const [downloadingPdf, setDownloadingPdf] = useState(false)
 
   const [form, setForm] = useState({
     niche: '',
@@ -106,6 +110,7 @@ export function EbookGenerator() {
 
       if (error) {
         toast.error(error)
+        setStep('outline')
         return
       }
 
@@ -125,6 +130,26 @@ export function EbookGenerator() {
     }
   }
 
+  async function handleDownloadPDF() {
+    if (!content || !outline) return
+    setDownloadingPdf(true)
+    try {
+      const { generateEbookPDF } = await import('@/lib/pdf/ebook-pdf')
+      await generateEbookPDF({
+        title: outline.title,
+        subtitle: outline.subtitle,
+        content,
+        theme: selectedTheme,
+      })
+      toast.success('PDF baixado com sucesso!')
+    } catch (err) {
+      console.error(err)
+      toast.error('Erro ao gerar PDF. Tente o download em Markdown.')
+    } finally {
+      setDownloadingPdf(false)
+    }
+  }
+
   function handleDownloadMarkdown() {
     const blob = new Blob([content], { type: 'text/markdown' })
     const url = URL.createObjectURL(blob)
@@ -134,7 +159,6 @@ export function EbookGenerator() {
     a.click()
     URL.revokeObjectURL(url)
   }
-
 
   const currentStepIndex = stepConfig.findIndex((s) => s.id === step)
 
@@ -318,6 +342,52 @@ export function EbookGenerator() {
               </div>
             </div>
 
+            {/* ── Theme picker ──────────────────────── */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Palette className="w-3.5 h-3.5" style={{ color: '#a855f7' }} />
+                <Label className="text-xs font-semibold tracking-wide" style={{ color: '#9b8cc0' }}>
+                  TEMA DE CORES DO PDF
+                </Label>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {EBOOK_THEMES.map((theme) => {
+                  const isSelected = selectedTheme.id === theme.id
+                  const [r, g, b] = theme.primary
+                  const color = `rgb(${r},${g},${b})`
+                  return (
+                    <button
+                      key={theme.id}
+                      type="button"
+                      onClick={() => setSelectedTheme(theme)}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200"
+                      style={
+                        isSelected
+                          ? {
+                              background: `rgba(${r},${g},${b},0.2)`,
+                              border: `1px solid rgba(${r},${g},${b},0.6)`,
+                              color,
+                              boxShadow: `0 0 10px rgba(${r},${g},${b},0.3)`,
+                            }
+                          : {
+                              background: 'rgba(168,85,247,0.04)',
+                              border: '1px solid rgba(168,85,247,0.12)',
+                              color: '#7a6fa0',
+                            }
+                      }
+                    >
+                      <span
+                        className="w-3 h-3 rounded-full shrink-0"
+                        style={{ background: color }}
+                      />
+                      {theme.name}
+                      {isSelected && <Check className="w-3 h-3" />}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
             <Button
               type="submit"
               disabled={loading}
@@ -389,8 +459,8 @@ export function EbookGenerator() {
               <div
                 className="w-20 h-28 rounded-xl flex items-center justify-center shrink-0 relative"
                 style={{
-                  background: 'linear-gradient(135deg,#9333ea,#6366f1,#38bdf8)',
-                  boxShadow: '0 0 30px rgba(168,85,247,0.4), 0 8px 24px rgba(0,0,0,0.4)',
+                  background: `linear-gradient(135deg,rgb(${selectedTheme.primary.join(',')}),rgb(${selectedTheme.secondary.join(',')}))`,
+                  boxShadow: `0 0 30px rgba(${selectedTheme.primary.join(',')},0.4), 0 8px 24px rgba(0,0,0,0.4)`,
                 }}
               >
                 <BookOpen className="w-8 h-8 text-white" />
@@ -482,7 +552,7 @@ export function EbookGenerator() {
               onClick={handleGenerateContent}
             >
               <Zap className="w-4 h-4" />
-              Gerar eBook Completo
+              Gerar eBook Completo + PDF
             </Button>
           </div>
         </div>
@@ -507,6 +577,11 @@ export function EbookGenerator() {
               <div className="flex items-center gap-2">
                 <BookOpen className="w-4 h-4" style={{ color: '#c084fc' }} />
                 <span className="text-sm font-semibold text-white">{outline?.title ?? 'eBook Gerado'}</span>
+                {/* Theme preview dot */}
+                <span
+                  className="w-3 h-3 rounded-full"
+                  style={{ background: `rgb(${selectedTheme.primary.join(',')})` }}
+                />
               </div>
               {!generating && content && (
                 <div className="flex gap-2 flex-wrap">
@@ -518,7 +593,21 @@ export function EbookGenerator() {
                     onClick={handleDownloadMarkdown}
                   >
                     <Download className="w-3.5 h-3.5" />
-                    Baixar .md
+                    .md
+                  </Button>
+                  <Button
+                    size="sm"
+                    disabled={downloadingPdf}
+                    className="gap-1.5 text-xs rounded-lg text-white border-0"
+                    style={{ background: `linear-gradient(135deg,rgb(${selectedTheme.primary.join(',')}),rgb(${selectedTheme.secondary.join(',')}))` }}
+                    onClick={handleDownloadPDF}
+                  >
+                    {downloadingPdf ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Download className="w-3.5 h-3.5" />
+                    )}
+                    {downloadingPdf ? 'Gerando PDF...' : 'Baixar PDF'}
                   </Button>
                   <Button
                     size="sm"
