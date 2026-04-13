@@ -19,12 +19,10 @@ import {
   FileText,
   Star,
   Check,
-  Palette,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import ReactMarkdown from 'react-markdown'
-import { EBOOK_THEMES, type EbookTheme } from '@/lib/pdf/ebook-themes'
 
 interface EbookOutline {
   title: string
@@ -56,9 +54,6 @@ export function EbookGenerator() {
   const [outline, setOutline] = useState<EbookOutline | null>(null)
   const [content, setContent] = useState('')
   const [generating, setGenerating] = useState(false)
-
-  const [selectedTheme, setSelectedTheme] = useState<EbookTheme>(EBOOK_THEMES[0])
-  const [downloadingPDF, setDownloadingPDF] = useState(false)
 
   const [form, setForm] = useState({
     niche: '',
@@ -140,24 +135,6 @@ export function EbookGenerator() {
     URL.revokeObjectURL(url)
   }
 
-  async function handleDownloadPDF() {
-    if (!content || !outline) return
-    setDownloadingPDF(true)
-    try {
-      const { generateEbookPDF } = await import('@/lib/pdf/ebook-pdf')
-      await generateEbookPDF({
-        title: outline.title,
-        subtitle: outline.subtitle,
-        content,
-        theme: selectedTheme,
-      })
-      toast.success('PDF gerado com sucesso!')
-    } catch {
-      toast.error('Erro ao gerar PDF.')
-    } finally {
-      setDownloadingPDF(false)
-    }
-  }
 
   const currentStepIndex = stepConfig.findIndex((s) => s.id === step)
 
@@ -338,39 +315,6 @@ export function EbookGenerator() {
                     <SelectItem value="gemini">Gemini 1.5 Pro</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
-
-            {/* Seletor de tema de cor */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Palette className="w-3.5 h-3.5" style={{ color: '#9b8cc0' }} />
-                <span className="text-xs font-semibold tracking-wide" style={{ color: '#9b8cc0' }}>COR DO EBOOK (PDF)</span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {EBOOK_THEMES.map((theme) => (
-                  <button
-                    key={theme.id}
-                    type="button"
-                    onClick={() => setSelectedTheme(theme)}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                    style={{
-                      background: selectedTheme.id === theme.id
-                        ? `rgba(${theme.primary.join(',')},0.15)`
-                        : 'rgba(168,85,247,0.05)',
-                      border: selectedTheme.id === theme.id
-                        ? `1px solid rgb(${theme.primary.join(',')})`
-                        : '1px solid rgba(168,85,247,0.15)',
-                      color: selectedTheme.id === theme.id ? '#fff' : '#9b8cc0',
-                    }}
-                  >
-                    <span
-                      className="w-3 h-3 rounded-full shrink-0"
-                      style={{ background: `rgb(${theme.primary.join(',')})` }}
-                    />
-                    {theme.name}
-                  </button>
-                ))}
               </div>
             </div>
 
@@ -566,16 +510,6 @@ export function EbookGenerator() {
               </div>
               {!generating && content && (
                 <div className="flex gap-2 flex-wrap">
-                  <Button
-                    size="sm"
-                    className="gap-1.5 text-xs rounded-lg text-white border-0"
-                    style={{ background: `rgb(${selectedTheme.primary.join(',')})` }}
-                    onClick={handleDownloadPDF}
-                    disabled={downloadingPDF}
-                  >
-                    {downloadingPDF ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-                    {downloadingPDF ? 'Gerando PDF...' : 'Baixar PDF'}
-                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
