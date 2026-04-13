@@ -3,6 +3,35 @@ import { NextRequest, NextResponse } from 'next/server'
 export const maxDuration = 60
 import { DEMO_EBOOK_OUTLINE, DEMO_EBOOK_CONTENT } from '@/lib/ai/demo-responses'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalizeOutline(raw: Record<string, any>) {
+  const get = (...keys: string[]) => {
+    for (const k of keys) if (raw[k] !== undefined) return raw[k]
+    return undefined
+  }
+
+  const chapters =
+    get('chapters', 'capitulos', 'capítulos', 'Chapters', 'Capítulos') ?? []
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const normalizedChapters = (Array.isArray(chapters) ? chapters : []).map((ch: any) => ({
+    number: ch.number ?? ch.numero ?? ch.número ?? ch.num ?? 0,
+    title: ch.title ?? ch.titulo ?? ch.título ?? ch.name ?? '',
+    description: ch.description ?? ch.descricao ?? ch.descrição ?? ch.objetivo ?? '',
+    keyPoints: ch.keyPoints ?? ch.key_points ?? ch.pontos ?? ch.pontosPrincipais ?? ch.tópicos ?? ch.topicos ?? [],
+  }))
+
+  return {
+    title: get('title', 'titulo', 'título', 'nome') ?? '',
+    subtitle: get('subtitle', 'subtitulo', 'subtítulo', 'sub_titulo') ?? '',
+    tagline: get('tagline', 'slogan', 'frase', 'fraseImpacto', 'frase_impacto') ?? '',
+    chapters: normalizedChapters,
+    targetAudience: get('targetAudience', 'target_audience', 'publicoAlvo', 'público_alvo', 'publico_alvo', 'publicoIdeal') ?? '',
+    mainBenefit: get('mainBenefit', 'main_benefit', 'beneficioPrincipal', 'beneficio_principal', 'transformacao', 'transformação') ?? '',
+    potentialScore: get('potentialScore', 'potential_score', 'pontuacao', 'pontuação', 'score') ?? 75,
+  }
+}
+
 async function handleReal(request: NextRequest) {
   const { createClient } = await import('@/lib/supabase/server')
   const { generateWithModel } = await import('@/lib/ai/router')
@@ -34,21 +63,28 @@ async function handleReal(request: NextRequest) {
   if (mode === 'outline') {
     const jsonMatch = result.match(/\{[\s\S]*\}/)
     if (jsonMatch) {
+      let parsed: Record<string, unknown> | null = null
       try {
-        return NextResponse.json({ data: JSON.parse(jsonMatch[0]) })
+        parsed = JSON.parse(jsonMatch[0])
       } catch {
-        // JSON malformado — tenta limpar e fazer parse novamente
         const cleaned = jsonMatch[0]
           .replace(/,\s*}/g, '}')
           .replace(/,\s*]/g, ']')
         try {
-          return NextResponse.json({ data: JSON.parse(cleaned) })
+          parsed = JSON.parse(cleaned)
         } catch {
-          // Retorna como texto se ainda falhar
+          console.error('[ebook/route] JSON inválido:', jsonMatch[0].slice(0, 500))
           return NextResponse.json({ data: result })
         }
       }
+
+      console.log('[ebook/route] outline keys:', Object.keys(parsed ?? {}))
+
+      // Normaliza nomes de campo em PT para EN
+      const normalized = normalizeOutline(parsed ?? {})
+      return NextResponse.json({ data: normalized })
     }
+    console.error('[ebook/route] Nenhum JSON encontrado. Raw:', result.slice(0, 500))
   }
   return NextResponse.json({ data: result })
 }

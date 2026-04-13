@@ -38,7 +38,12 @@ Retorne em JSON com o seguinte formato:
   "potentialScore": 85
 }
 
-IMPORTANTE: Retorne APENAS o JSON puro, sem texto antes ou depois, sem markdown, sem blocos de código. O JSON deve ser válido e sem vírgulas extras. Os campos obrigatórios são: title, subtitle, tagline, chapters (array com pelo menos 5 itens), targetAudience, mainBenefit, potentialScore.`
+REGRAS CRÍTICAS:
+1. Retorne APENAS o JSON puro — sem texto antes ou depois, sem markdown, sem \`\`\`json, sem blocos de código
+2. Use EXATAMENTE os nomes de campo em inglês: "title", "subtitle", "tagline", "chapters", "targetAudience", "mainBenefit", "potentialScore"
+3. O array "chapters" deve ter exatamente 7 itens, cada um com: "number" (inteiro), "title" (string), "description" (string), "keyPoints" (array de strings)
+4. "potentialScore" deve ser um número inteiro entre 0 e 100
+5. O JSON deve ser válido — sem vírgulas extras, sem campos duplicados`
   }
 
   return `Crie o conteúdo COMPLETO de um eBook para:
