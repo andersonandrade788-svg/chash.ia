@@ -120,41 +120,43 @@ export function buildOfferPrompt(params: {
   price: string
   audience: string
 }): string {
-  return `Crie uma oferta completa de vendas para:
+  return `Crie uma oferta de vendas para:
 - Produto: ${params.productName}
 - Nicho: ${params.niche}
 - Preço: ${params.price}
 - Público: ${params.audience}
 
-Retorne em JSON:
+Retorne APENAS o JSON puro abaixo, sem texto antes ou depois, sem markdown, sem blocos de código:
 {
-  "headline": "Título principal da página de vendas",
-  "subheadline": "Subtítulo complementar",
-  "salesLetter": "Carta de vendas completa com AIDA (mín. 500 palavras)",
+  "headline": "Título principal da página de vendas (impactante, até 15 palavras)",
+  "subheadline": "Subtítulo complementar (até 20 palavras)",
+  "salesLetter": "Carta de vendas com estrutura AIDA em 3 parágrafos curtos",
   "bullets": ["Benefício 1", "Benefício 2", "Benefício 3", "Benefício 4", "Benefício 5"],
-  "cta": "Texto do botão de compra",
-  "urgency": "Texto de urgência/escassez",
-  "whatsappScript": "Script completo para envio no WhatsApp",
+  "cta": "Texto do botão de compra (até 8 palavras)",
+  "urgency": "Texto de urgência ou escassez (até 20 palavras)",
+  "whatsappScript": "Script de WhatsApp em 3 partes: abertura, proposta e CTA",
   "adCreatives": [
     {
       "platform": "Instagram",
-      "hook": "Gancho inicial",
-      "body": "Corpo do anúncio",
-      "cta": "Call to action"
+      "hook": "Gancho inicial (1 frase)",
+      "body": "Corpo do anúncio (2-3 frases)",
+      "cta": "Call to action (1 frase)"
     },
     {
       "platform": "Facebook",
-      "hook": "Gancho inicial",
-      "body": "Corpo do anúncio",
-      "cta": "Call to action"
+      "hook": "Gancho inicial (1 frase)",
+      "body": "Corpo do anúncio (2-3 frases)",
+      "cta": "Call to action (1 frase)"
     }
   ],
   "funnelStructure": {
-    "top": "Topo do funil — consciência",
-    "middle": "Meio do funil — consideração",
-    "bottom": "Fundo do funil — decisão"
+    "top": "Estratégia de consciência (1-2 frases)",
+    "middle": "Estratégia de consideração (1-2 frases)",
+    "bottom": "Estratégia de decisão (1-2 frases)"
   }
-}`
+}
+
+IMPORTANTE: JSON válido, sem vírgulas extras, use exatamente esses nomes de campo em inglês.`
 }
 
 // ── Chat Prompts ───────────────────────────────────────────────
