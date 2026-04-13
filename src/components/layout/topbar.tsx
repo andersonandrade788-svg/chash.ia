@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { Bell, Zap, Menu } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import type { Profile } from '@/types/database'
+import { useEffect, useState } from 'react'
 
 interface TopbarProps {
   profile: Profile | null
@@ -15,9 +16,13 @@ export function Topbar({ profile, onMenuClick }: TopbarProps) {
     ? profile.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
     : profile?.email?.[0]?.toUpperCase() ?? 'U'
 
-  const hour = new Date().getHours()
-  const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite'
+  const [greeting, setGreeting] = useState('')
   const firstName = profile?.name?.split(' ')[0] ?? 'Empreendedor'
+
+  useEffect(() => {
+    const hour = new Date().getHours()
+    setGreeting(hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite')
+  }, [])
 
   const usedPct = profile
     ? Math.round((profile.generations_used / profile.generations_limit) * 100)
